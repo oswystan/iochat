@@ -3,6 +3,45 @@
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
         <title>iochat</title>
     </head>
+    <style type="text/css">
+        #div_messages {
+            height: 300px;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #cccccc;
+            overflow: auto;
+            margin: 10px 0;
+        }
+
+        #chat {
+            border-color: #cccccc;
+            border-style: solid;
+            border-width: 1px;
+            padding: 10px;
+        }
+
+        input, textarea, select {
+            border-style: solid;
+            border-width: 1px;
+            border-color: #cbcbcb;
+            font-family: skia;
+            font-size: 18px;
+            padding: 16px;
+            display: inline-block;
+        }
+        input[type='submit'] {
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        li {
+            padding: 8px;
+            background-color: #dddddd;
+            margin: 2px;
+            font-size: 1.4em;
+            list-style: none;
+        }
+    </style>
     <body>
         <div id="div_login">
             <form id="formLogin">
@@ -10,14 +49,15 @@
                 <input type="submit" value="login" />
             </form>
         </div>
-        <div id="div_messages" style="height: 400px">
-            
-        </div>
-        <div id="div_send">
-            <form id="form_send">
-                <input type="text" id="send_text" value="" />
-                <input type="submit" value="send" />
-            </form>
+        <div id="chat">
+            <div id="div_messages">
+            </div>
+            <div id="div_send">
+                <form id="form_send">
+                    <input type="text" id="send_text" value="" />
+                    <input type="submit" value="send" />
+                </form>
+            </div>
         </div>
     </body>
     <script src="/socket.io/socket.io.js"></script>
@@ -25,13 +65,13 @@
     <script>
         var socket = io.connect();
         var login = $('#formLogin');
+        var div_chat = $("#chat");
         var div_messages = $('#div_messages');
         var div_send = $('#div_send');
         var user_name = $('#user_name');
         var send = $('#send_text');
 
-        div_messages.hide();
-        div_send.hide();
+        div_chat.hide();
 
         login.submit(function (e) {
             e.preventDefault();
@@ -39,8 +79,7 @@
                 if (data) {
                     console.log("login success");
                     $('#div_login').hide();
-                    div_messages.show();
-                    div_send.show();
+                    div_chat.show();
                     socket.nick = user_name.val();
                     user_name.val('');
                 } else {
@@ -52,6 +91,10 @@
         div_send.submit(function (e) {
             e.preventDefault();
             var msg = send.val();
+            msg = msg.trim();
+            if (msg.length == 0) {
+                return;
+            }
             if (msg.indexOf('@') == -1) {
                 socket.emit("message", {"who": socket.nick, "message": send.val()});
             } else {
@@ -65,7 +108,7 @@
                     };
                     socket.emit("message_to", msgbody, function (data) {
                         if (data) {
-                            console.log("send success"); 
+                            console.log("send success");
                         } else {
                             console.log("send failed");
                         }
@@ -75,7 +118,8 @@
             send.val('');
         });
         socket.on("message", function (data) {
-            div_messages.append("<strong>" + data.who + ": </strong>" + data.message + "<br>");
+            div_messages.append("<li> <strong>" + data.who + ": </strong>" + data.message + "</li>");
+            div_messages.scrollTop(10000000);
         });
         socket.on("users", function (data) {
             console.log(data);
