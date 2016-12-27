@@ -1,0 +1,14 @@
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>iochat</title>
+    </head>
+    <body>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        console.log("connected");
+        var socket = io.connect();
+        socket.emit("login", "wystan");
+    </script>
+</html>
