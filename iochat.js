@@ -67,6 +67,7 @@ function main() {
             if (data.to in clients) {
                 cb(true);
                 clients[data.to].emit("message", data);
+                socket.emit("message", data);
             } else {
                 cb(false);
             }
