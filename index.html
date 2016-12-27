@@ -7,11 +7,17 @@
         <div id="div_login">
             <form id="formLogin">
                 <input type="text" id="user_name" value="" />
-                <input type="submit" id="" value="login" />
+                <input type="submit" value="login" />
             </form>
         </div>
-        <div id="div_message">
+        <div id="div_messages" style="height: 400px">
             
+        </div>
+        <div id="div_send">
+            <form id="form_send">
+                <input type="text" id="send_text" value="" />
+                <input type="submit" value="send" />
+            </form>
         </div>
     </body>
     <script src="/socket.io/socket.io.js"></script>
@@ -19,21 +25,57 @@
     <script>
         var socket = io.connect();
         var login = $('#formLogin');
+        var div_messages = $('#div_messages');
+        var div_send = $('#div_send');
         var user_name = $('#user_name');
+        var send = $('#send_text');
+
+        div_messages.hide();
+        div_send.hide();
+
         login.submit(function (e) {
             e.preventDefault();
             socket.emit("login", user_name.val(), function (data) {
                 if (data) {
                     console.log("login success");
                     $('#div_login').hide();
+                    div_messages.show();
+                    div_send.show();
+                    socket.nick = user_name.val();
+                    user_name.val('');
                 } else {
                     console.log("login failed");
                 }
             });
-            user_name.val('');
+        });
+
+        div_send.submit(function (e) {
+            e.preventDefault();
+            var msg = send.val();
+            if (msg.indexOf('@') == -1) {
+                socket.emit("message", {"who": socket.nick, "message": send.val()});
+            } else {
+                msg = msg.substr(1);
+                var idx = msg.indexOf(' ');
+                if (idx != -1) {
+                    var msgbody = {
+                        "who": socket.nick,
+                        "to" : msg.substr(0, idx),
+                        "message": msg.substr(idx)
+                    };
+                    socket.emit("message_to", msgbody, function (data) {
+                        if (data) {
+                            console.log("send success"); 
+                        } else {
+                            console.log("send failed");
+                        }
+                    });
+                }
+            }
+            send.val('');
         });
         socket.on("message", function (data) {
-            console.log(data);
+            div_messages.append("<strong>" + data.who + ": </strong>" + data.message + "<br>");
         });
         socket.on("users", function (data) {
             console.log(data);

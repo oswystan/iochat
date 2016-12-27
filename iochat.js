@@ -42,6 +42,7 @@ function main() {
                 console.log("delete " + socket.nick);
                 delete clients[socket.nick];
                 delete socket.nick;
+                refreshClients();
             }
         });
         socket.on("login", function (data, cb) {
@@ -63,9 +64,9 @@ function main() {
         });
 
         socket.on("message_to", function (data, cb) {
-            if (data.user in clients) {
+            if (data.to in clients) {
                 cb(true);
-                clients[data.user].emit("message", data.message);
+                clients[data.to].emit("message", data);
             } else {
                 cb(false);
             }
