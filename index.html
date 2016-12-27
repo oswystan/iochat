@@ -4,11 +4,39 @@
         <title>iochat</title>
     </head>
     <body>
+        <div id="div_login">
+            <form id="formLogin">
+                <input type="text" id="user_name" value="" />
+                <input type="submit" id="" value="login" />
+            </form>
+        </div>
+        <div id="div_message">
+            
+        </div>
     </body>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/libs/jquery.js"></script>
     <script>
-        console.log("connected");
         var socket = io.connect();
-        socket.emit("login", "wystan");
+        var login = $('#formLogin');
+        var user_name = $('#user_name');
+        login.submit(function (e) {
+            e.preventDefault();
+            socket.emit("login", user_name.val(), function (data) {
+                if (data) {
+                    console.log("login success");
+                    $('#div_login').hide();
+                } else {
+                    console.log("login failed");
+                }
+            });
+            user_name.val('');
+        });
+        socket.on("message", function (data) {
+            console.log(data);
+        });
+        socket.on("users", function (data) {
+            console.log(data);
+        });
     </script>
 </html>
